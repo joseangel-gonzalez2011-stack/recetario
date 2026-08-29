@@ -697,13 +697,16 @@ function renderSuper(){
     <p>Abre una receta y toca "Al súper" para agregar sus ingredientes.</p></div>`;
 }
 function alSuper(id){
-  const r=recetas.find(x=>x.id===id);
+  const r=buscarReceta(id); if(!r||!r.nombre) return;
   let n=0;
-  r.ingredientes.forEach(ing=>{
-    if(!superLista.some(it=>it.texto===ing)){ superLista.push({texto:ing,de:r.nombre,hecho:false}); n++; }
-  });
+  const agregar = txt=>{
+    if(!superLista.some(it=>it.texto===txt)){ superLista.push({texto:txt,de:r.nombre,hecho:false}); n++; }
+  };
+  // Para cócteles: primero las botellas que hay que comprar
+  if(r.botellas) r.botellas.forEach(k=>agregar(`🍾 ${B[k].marca} — ${B[k].tipo.split('·')[0].trim()}`));
+  r.ingredientes.forEach(agregar);
   guardarSuper();
-  toast(n?`${n} ingredientes a la lista 🛒`:'Ya estaban en la lista');
+  toast(n?`${n} ${lang==='en'&&r.botellas?'items added to the list 🛒':'ingredientes a la lista 🛒'}`:(lang==='en'&&r.botellas?'Already on the list':'Ya estaban en la lista'));
 }
 function vaciarSuper(){
   if(superLista.length && confirm('¿Vaciar toda la lista?')){ superLista=[]; guardarSuper(); renderSuper(); }
@@ -917,11 +920,11 @@ let lang = localStorage.getItem('recetario.lang') || 'es';
 
 const T = {
   es:{botellas:'🍾 Qué botella agarrar', util:'🛠️ Lo que vas a ocupar', ing:'🧺 Ingredientes', pasos:'🍸 Paso a paso',
-      tip:'📝 Tip de barra', servicio:'🍸 Modo servicio (paso a paso)', dicc:'Diccionario del bartender',
+      tip:'📝 Tip de barra', servicio:'🍸 Modo servicio (paso a paso)', agregar:'Agregar al súper', dicc:'Diccionario del bartender',
       diccSub:'Alcoholes, utensilios y cómo te piden los tragos', diccIntro:'Lo básico para pararte en una barra sin que te agarren en curva.',
       min:'min', facil:'Fácil', media:'Media'},
   en:{botellas:'🍾 Which bottle to grab', util:'🛠️ What you’ll need', ing:'🧺 Ingredients', pasos:'🍸 Step by step',
-      tip:'📝 Bar tip', servicio:'🍸 Service mode (step by step)', dicc:'Bartender’s dictionary',
+      tip:'📝 Bar tip', servicio:'🍸 Service mode (step by step)', agregar:'Add to shopping list', dicc:'Bartender’s dictionary',
       diccSub:'Spirits, tools and how people order drinks', diccIntro:'The basics so nothing at the bar catches you off guard.',
       min:'min', facil:'Easy', media:'Medium'}
 };
@@ -1108,9 +1111,10 @@ function renderBar(){
     </div>` + lista.map(c=>`
     <div class="card" onclick="abrirCoctel('${c.id}')">
       <img class="foto" src="botellas/d-${c.id.replace('bar-','')}.jpg" alt="" ${c.id==='bar-negroni'?'style="object-position:center bottom"':''} onerror="this.outerHTML='<div class=sinfoto>${c.emoji}</div>'">
+      <button class="fav" title="${t('agregar')}" style="top:auto;bottom:8px" onclick="event.stopPropagation();alSuper('${c.id}')">🛒</button>
       <div class="info">
         <h3>${c.nombre}</h3>
-        <div class="meta"><span>⏱ ${c.tiempo} min</span><span>${c.dificultad}</span></div>
+        <div class="meta"><span>⏱ ${c.tiempo} ${t('min')}</span><span>${c.dificultad}</span></div>
       </div>
     </div>`).join('');
   $('vacio').innerHTML = lista.length ? '' : `
@@ -1157,6 +1161,7 @@ function abrirCoctel(id){
       <div class="seccion"><h3>${t('tip')}</h3><div class="nota">${esc(c.notas)}</div></div>
       <div class="det-acciones">
         <button class="btn btn-verde" onclick="modoCocina('${c.id}')">${t('servicio')}</button>
+        <button class="btn btn-borde" onclick="alSuper('${c.id}')">🛒 ${t('agregar')}</button>
       </div>
     </div>`;
   $('detalle').classList.add('abierta');
