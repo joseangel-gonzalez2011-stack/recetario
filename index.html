@@ -321,7 +321,10 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A8471" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
     <input id="busca" type="text" placeholder="Buscar por nombre o ingrediente…">
   </div>
-  <button class="btn-bar" id="btn-bar" onclick="toggleBar()">🍸 Modo bartender</button>
+  <div style="display:flex;gap:8px">
+    <button class="btn-bar" id="btn-bar" onclick="toggleBar()">🍸 Modo bartender</button>
+    <button class="btn-bar" id="btn-lang" onclick="toggleLang()" style="width:auto;flex-shrink:0;padding:10px 18px">EN</button>
+  </div>
 </header>
 
 <div class="chips" id="chips"></div>
@@ -590,9 +593,10 @@ async function modoCocina(id){
 }
 function pintarPaso(){
   const total = cocinaReceta.pasos.length;
-  $('cocina-contador').textContent = `Paso ${cocinaPaso+1} de ${total}`;
+  const en = modoBar && lang==='en';
+  $('cocina-contador').textContent = en ? `Step ${cocinaPaso+1} of ${total}` : `Paso ${cocinaPaso+1} de ${total}`;
   $('cocina-texto').textContent = cocinaReceta.pasos[cocinaPaso];
-  $('cocina-sig').textContent = cocinaPaso===total-1 ? '¡Listo! 🎉' : 'Siguiente →';
+  $('cocina-sig').textContent = cocinaPaso===total-1 ? (en?'Done! 🎉':'¡Listo! 🎉') : (en?'Next →':'Siguiente →');
   pintarTimer();
 }
 function pasoCocina(dir){
@@ -908,12 +912,185 @@ const COCTELES = [
 }
 ];
 
-function buscarReceta(id){ return recetas.find(x=>x.id===id) || COCTELES.find(x=>x.id===id); }
+/* ---- Idioma del modo bartender ---- */
+let lang = localStorage.getItem('recetario.lang') || 'es';
+
+const T = {
+  es:{botellas:'🍾 Qué botella agarrar', util:'🛠️ Lo que vas a ocupar', ing:'🧺 Ingredientes', pasos:'🍸 Paso a paso',
+      tip:'📝 Tip de barra', servicio:'🍸 Modo servicio (paso a paso)', dicc:'Diccionario del bartender',
+      diccSub:'Alcoholes, utensilios y cómo te piden los tragos', diccIntro:'Lo básico para pararte en una barra sin que te agarren en curva.',
+      min:'min', facil:'Fácil', media:'Media'},
+  en:{botellas:'🍾 Which bottle to grab', util:'🛠️ What you’ll need', ing:'🧺 Ingredients', pasos:'🍸 Step by step',
+      tip:'📝 Bar tip', servicio:'🍸 Service mode (step by step)', dicc:'Bartender’s dictionary',
+      diccSub:'Spirits, tools and how people order drinks', diccIntro:'The basics so nothing at the bar catches you off guard.',
+      min:'min', facil:'Easy', media:'Medium'}
+};
+const t = k => T[lang][k];
+
+const COCTELES_EN = {
+'bar-negroni':{nombre:'Negroni', vaso:'Old fashioned glass (short and wide)', dificultad:'Easy',
+  herramientas:['Mixing glass (or a large glass)','Bar spoon (or a long spoon)','Strainer (if you mixed separately)','Jigger','Peeler or knife for the twist'],
+  ingredientes:['30 ml (1 nip) of gin','30 ml (1 nip) of Campari','30 ml (1 nip) of sweet red vermouth','Ice (ideally 1 large cube)','1 orange peel twist (or yellow lemon)'],
+  pasos:['Fill the old fashioned glass with ice and let it chill while you prep. Cold glass = a drink that doesn’t get watery.',
+  'Fill the mixing glass 3/4 with ice.',
+  'Measure with the jigger and pour over the ice: 1 nip (30 ml) of gin, 1 nip of Campari and 1 nip of sweet vermouth. Equal parts — that’s the whole recipe.',
+  'Stir with the bar spoon for 20–30 seconds with a smooth circular motion (do NOT shake). It should chill and dilute slightly.',
+  'Dump the ice from the old fashioned glass and add one fresh large ice cube.',
+  'Strain the mix over the fresh ice.',
+  'Cut a strip of orange peel, squeeze it folded over the drink (to release its oils), rub it on the rim and drop it in. Done.'],
+  notas:'The classic garnish is ORANGE; yellow lemon works if it’s all you have. It’s a strong, bitter drink — meant for sipping.'},
+'bar-margarita':{nombre:'Margarita', vaso:'Margarita glass or old fashioned glass', dificultad:'Easy',
+  herramientas:['Shaker','Jigger','Citrus juicer','Small plate with salt','Strainer'],
+  ingredientes:['45 ml (1½ nips) of tequila (blanco or reposado)','30 ml (1 nip) of triple sec (Cointreau)','30 ml of freshly squeezed lime juice','Salt for the rim','Ice','1 lime wheel to garnish'],
+  pasos:['Put the glass in the freezer (or fill it with ice) to chill.',
+  'Salt the rim: run a lime wedge around the rim to wet it, then dip it into the plate of salt. Outside edge only, never inside.',
+  'Squeeze limes until you have 30 ml of juice. It must be fresh, not bottled.',
+  'Fill the shaker 3/4 with ice.',
+  'Add to the shaker: 45 ml (1½ nips) of tequila, 30 ml (1 nip) of Cointreau and 30 ml of lime juice.',
+  'Close the shaker tight and shake HARD for 10–15 seconds, until the metal feels freezing.',
+  'If you chilled the glass with ice, dump it. Strain into the salted glass (no ice in a coupe, or over fresh ice in a rocks glass).',
+  'Garnish with the lime wheel on the rim.'],
+  notas:'Aussie spec: 1½ nips tequila, 1 nip triple sec, 1 nip lime. In Mexico "limón" always means lime.'},
+'bar-mojito':{nombre:'Mojito', vaso:'Highball glass (tall)', dificultad:'Medium',
+  herramientas:['Muddler (or the back of a thick spoon)','Jigger','Bar spoon','Citrus juicer'],
+  ingredientes:['45 ml (1½ nips) of white rum','30 ml of lime juice','2 teaspoons of sugar (or 20 ml simple syrup)','8–10 mint leaves','Soda water to top','Ice, ideally crushed','1 mint sprig to garnish'],
+  pasos:['In the highball glass (it’s built in the glass), add the sugar and 30 ml of lime juice. Stir so the sugar starts dissolving.',
+  'Add the mint leaves. Before dropping them in, clap them between your hands to release the aroma.',
+  'Muddle GENTLY: just press and twist 3 or 4 times. If you shred the mint it turns bitter.',
+  'Fill the glass to the top with crushed ice.',
+  'Pour the 45 ml (1½ nips) of white rum over the ice.',
+  'Stir from the bottom up with the bar spoon to mix the sugar and lift the mint.',
+  'Top with soda water (about 60 ml).',
+  'Add a bit more ice if it settled, and garnish with the mint sprig slapped between your palms. Serve with a straw.'],
+  notas:'Mistake #1 is destroying the mint: muddle gently. No crushed ice? Wrap cubes in a towel and give them a few whacks.'},
+'bar-aperol':{nombre:'Aperol Spritz', vaso:'Balloon glass (large wine glass)', dificultad:'Easy',
+  herramientas:['Jigger','Bar spoon'],
+  ingredientes:['90 ml (3 nips) of prosecco','60 ml (2 nips) of Aperol','30 ml (1 nip) of soda water','Lots of ice','1 orange slice'],
+  pasos:['Chill the glass: fill it with ice for a minute or keep it in the fridge. The prosecco must be very cold too.',
+  'Fill the balloon glass to the top with ice. Don’t skimp: more ice chills better and melts less.',
+  'Pour the 90 ml of prosecco over the ice first (so the Aperol doesn’t sink to the bottom).',
+  'Add the 60 ml of Aperol.',
+  'Top with the 30 ml of soda water.',
+  'Give it ONE gentle turn with the bar spoon — don’t stir hard or you kill the bubbles.',
+  'Garnish with the orange slice inside the glass.'],
+  notas:'Easy rule: 3-2-1 (prosecco, Aperol, soda). Everything cold before you start, because this drink is never shaken.'},
+'bar-gintonic':{nombre:'Gin & Tonic', vaso:'Balloon glass or highball', dificultad:'Easy',
+  herramientas:['Jigger','Bar spoon'],
+  ingredientes:['30 ml (1 nip — the standard Aussie pour) of gin','120 ml of very cold tonic water','Lots of ice','1 lime wheel or cucumber'],
+  pasos:['Chill the glass with ice for a minute and dump it (or use a glass from the freezer). Tonic straight from the fridge.',
+  'Fill the glass to the top with ice. Little ice = watery drink.',
+  'Pour the nip of gin (30 ml) over the ice. If they ask for a double, it’s 2 nips (60 ml).',
+  'Tilt the glass and pour the tonic slowly, sliding it down the bar spoon or the side of the glass to keep the fizz.',
+  'One single gentle stir from the bottom.',
+  'Garnish with the lime wheel or a few cucumber ribbons.'],
+  notas:'In Australia the standard pour is 1 nip (30 ml) with 3–4 parts tonic. It’s the most ordered drink at any bar — know it by heart.'},
+'bar-paloma':{nombre:'Paloma', vaso:'Highball glass (tall)', dificultad:'Easy',
+  herramientas:['Jigger','Bar spoon','Plate with salt (optional)'],
+  ingredientes:['30 ml (1 nip) of tequila','120 ml of very cold grapefruit soda','15 ml (½ nip) of lime juice','Pinch of salt','Ice','1 grapefruit or lime slice'],
+  pasos:['If you like, salt the rim (run lime around the rim and dip it in salt).',
+  'Fill the glass to the top with ice.',
+  'Pour the nip of tequila (30 ml; double if asked: 60 ml).',
+  'Add the 15 ml of lime juice and the pinch of salt.',
+  'Top with the cold grapefruit soda, pouring slowly down the side of the glass.',
+  'One gentle stir and garnish with the slice. Done.'],
+  notas:'THE Mexican drink after the margarita. Dead easy: if a customer doesn’t know what to order, offer this.'},
+'bar-cubalibre':{nombre:'Cuba Libre', vaso:'Highball glass (tall)', dificultad:'Easy',
+  herramientas:['Jigger','Bar spoon','Citrus juicer'],
+  ingredientes:['30 ml (1 nip) of rum (white or gold)','120 ml of very cold Coca-Cola','2 lime quarters','Ice'],
+  pasos:['Fill the highball glass to the top with ice.',
+  'Squeeze the two lime quarters over the ice and drop the shells into the glass.',
+  'Pour the nip of rum (30 ml; double = 60 ml).',
+  'Top with the cold Coke, slowly and down the side to keep the fizz.',
+  'One gentle stir from the bottom up. Done.'],
+  notas:'The difference between a plain rum & coke and a real Cuba Libre is the fresh squeezed lime. Don’t skip it.'},
+'bar-whiskysour':{nombre:'Whisky Sour', vaso:'Old fashioned glass', dificultad:'Medium',
+  herramientas:['Shaker','Jigger','Strainer','Citrus juicer'],
+  ingredientes:['45 ml (1½ nips) of bourbon','30 ml (1 nip) of lemon juice','15 ml (½ nip) of simple syrup (equal parts sugar and hot water, dissolved)','1 egg white (optional, for the foam)','Ice','Cherry or orange twist to garnish'],
+  pasos:['No syrup? Dissolve 2 tablespoons of sugar in 2 of hot water and let it cool.',
+  'Chill the old fashioned glass with ice while you prep.',
+  'Add to the shaker: 45 ml (1½ nips) of bourbon, 30 ml of lemon juice and 15 ml of syrup. If using egg white, add it too.',
+  'With egg white: first shake WITHOUT ice for 10 seconds (dry shake) to build the foam.',
+  'Add ice to the shaker and shake hard for 12–15 seconds.',
+  'Dump the glass’s ice, add fresh ice and strain the drink over it.',
+  'Garnish with a cherry or an orange twist on the foam.'],
+  notas:'Sour formula in nips: 1½ spirit, 1 citrus, ½ sweet. Swap the spirit and you know half the cocktail menu.'},
+'bar-carajillo':{nombre:'Carajillo', vaso:'Old fashioned glass', dificultad:'Easy',
+  herramientas:['Jigger','Shaker (for the shaken version) or bar spoon','Espresso machine'],
+  ingredientes:['45 ml (1½ nips) of Licor 43','1 shot of espresso (30–40 ml), freshly pulled','Ice'],
+  pasos:['Pull the espresso shot first so it’s fresh.',
+  'Fill the old fashioned glass with ice.',
+  'Pour the 45 ml (1½ nips) of Licor 43 over the ice.',
+  'Classic version: slowly pour the hot espresso on top — it makes a nice gradient — and give it one stir.',
+  'Shaken version (the trendy one): Licor 43 and espresso into the shaker with ice, shake 10 seconds and strain over fresh ice; it comes out with foam.'],
+  notas:'Mexico’s most ordered restaurant cocktail in recent years. Two ingredients only: no excuse to get it wrong.'}
+};
+
+const DICC_EN = {
+  '🍾 Alcohol & drink types': [
+    ['Nip / standard drink (Australia)','The standard bar measure in Australia is the nip: 30 ml of spirit. A "double" is 2 nips (60 ml). A legal "standard drink" is 10 g of pure alcohol (= 1 nip of a 40% spirit); bottles state how many standard drinks they contain, and it’s the unit used for Responsible Service of Alcohol (RSA). Every recipe in this app is in nips.'],
+    ['Spirit','The "hard" alcohol made by distillation, usually 35–50% ABV. The base of almost every cocktail: tequila, mezcal, rum, gin, vodka, whisky and brandy. When someone asks "what spirit?", this is what they mean.'],
+    ['Liqueur','A spirit with added sugar and flavours (fruit, herbs, coffee, vanilla). Sweeter and usually lower alcohol (15–30%). Examples: Cointreau, Licor 43, Kahlúa, Baileys, amaretto. A liqueur is rarely the base: it supports.'],
+    ['Triple sec','Dry orange liqueur. The most famous is Cointreau. It’s what goes in a margarita.'],
+    ['Vermouth','Fortified wine infused with herbs. Red/rosso is sweet (Negroni, Manhattan); dry is for Martinis. Keep it in the fridge once opened, like wine.'],
+    ['Bitters','Bitter herbal drinks. Two kinds: aperitifs served in full measures (Campari, Aperol) and concentrated cocktail bitters in dasher bottles (Angostura) used by the dash.'],
+    ['Aperitif & digestif','Aperitif: light, bitter drink to open the appetite before a meal (Aperol Spritz, vermouth). Digestif: strong or sweet, for after the meal (carajillo, amaretto, brandy).'],
+    ['Sparkling wine','Wine with bubbles: Champagne (France), prosecco (Italy), cava (Spain). Cocktails almost always use prosecco for the price. Always well chilled, added last, never shaken.'],
+    ['Blanco / reposado / añejo','Tequila and rum aging levels. Blanco/silver: unaged, clean flavour, best for citrus cocktails. Reposado: 2 months to 1 year, smoother. Añejo: over a year, for sipping neat.'],
+    ['ABV / proof','ABV is the alcohol percentage. US "proof" is double the percentage: 80 proof = 40% ABV.'],
+    ['Well vs premium / top shelf','The "well" (house) spirit is the cheap default the bar pours. If the customer names a brand ("margarita with Don Julio"), it’s charged as premium. Always ask if they don’t specify.']
+  ],
+  '🛠️ Bar tools': [
+    ['Shaker','For shaking drinks with citrus, juice or egg. Two kinds: cobbler (3 pieces, built-in strainer, the classic) and Boston (glass + metal tin, what pro bars use).'],
+    ['Jigger','The double-cone measure. Typical sizes: 30 ml (1 nip) and 45 ml. Always measure: free-pouring by eye ruins drinks and wastes bottles.'],
+    ['Bar spoon','Long spoon with a spiral handle. For stirring, counting "turns" and layering liquids by sliding them down it.'],
+    ['Strainer','The Hawthorne is the spring one that sits on the shaker. The julep is the perforated one for the mixing glass. The fine mesh strainer is used as well ("double strain") to catch ice chips or pulp.'],
+    ['Muddler','The "pestle" for gently crushing herbs, fruit or sugar at the bottom of the glass (mojito). Press and twist — never smash.'],
+    ['Mixing glass','Large glass where stirred (not shaken) drinks are mixed with ice: Negroni, Old Fashioned, Manhattan.'],
+    ['Speed pourer','The spout you put on bottles for an even stream and "free pour" counting: counting seconds while you pour.'],
+    ['Glassware','Old fashioned/rocks: short and wide, for drinks over ice or neat. Highball/Collins: tall, for drinks with soda or mixers. Cocktail/martini glass: V-shaped, no ice. Coupe: round shallow glass, sours and daiquiris. Balloon glass: gin & tonic and spritz. Shot glass: shots. Flute: sparkling.'],
+    ['Other basics','Citrus juicer, peeler or knife for twists, ice tongs, a rimmer for salt/sugar, and a bar towel always at hand.']
+  ],
+  '🗣️ How people order drinks': [
+    ['Neat','Just the spirit, no ice, not chilled, in an old fashioned glass. "A whisky, neat."'],
+    ['On the rocks','Served over ice. "Tequila on the rocks."'],
+    ['Straight up / up','Chilled with ice (shaken or stirred) but served WITHOUT ice, strained into a glass. Not the same as neat.'],
+    ['Shot','Short pour meant to be downed in one. The chaser is what follows it (soda, beer, sangrita).'],
+    ['Double','Double measure of the spirit, same drink. Charged as double.'],
+    ['Dry','Less sweet. In a Martini it means less vermouth; "extra dry" means barely any.'],
+    ['Dirty','A Martini with olive brine.'],
+    ['Twist','Strip of citrus peel squeezed over the drink to release its oils, then dropped in as garnish.'],
+    ['Rimmed','Glass rim coated with salt (margarita, paloma) or sugar. Always the OUTSIDE of the rim.'],
+    ['Garnish','The drink’s decoration: slice, cherry, mint, olive. Not optional — it’s part of the presentation.'],
+    ['Virgin / mocktail','Alcohol-free version of a cocktail. "A virgin mojito."'],
+    ['Sour','Cocktail family: spirit + citrus + sweetener (margarita, whisky sour, daiquiri). Formula in nips: 1½ : 1 : ½.'],
+    ['Highball','Family: spirit + soda/mixer in a tall glass with ice (rum & coke, paloma, G&T). "Built" straight in the glass.'],
+    ['Spritz','Family: bitter aperitif + sparkling wine + soda over lots of ice.'],
+    ['Build','Making the drink directly in the glass it’s served in, no shaker.'],
+    ['Dry shake','Shaking first WITHOUT ice (to whip the egg white), then again with ice.'],
+    ['Dash','A tiny splash, usually of bitters. "Two dashes of Angostura."'],
+    ['Last call','The heads-up that the bar is about to close: last round of orders.']
+  ]
+};
+
+function coctelView(c){
+  if(lang!=='en') return c;
+  return {...c, ...(COCTELES_EN[c.id]||{})};
+}
+function toggleLang(){
+  lang = lang==='es' ? 'en' : 'es';
+  localStorage.setItem('recetario.lang', lang);
+  $('btn-lang').textContent = lang==='es' ? 'EN' : 'ES';
+  cerrar('detalle'); render();
+}
+
+function buscarReceta(id){ return recetas.find(x=>x.id===id) || coctelView(COCTELES.find(x=>x.id===id)||{}); }
 
 function toggleBar(){
   modoBar = !modoBar;
   document.body.classList.toggle('modo-bar', modoBar);
   $('btn-bar').textContent = modoBar ? '🥗 Volver a recetas' : '🍸 Modo bartender';
+  $('btn-lang').style.display = modoBar ? 'flex' : 'none';
+  $('btn-lang').textContent = lang==='es' ? 'EN' : 'ES';
   document.querySelector('header h1').textContent = modoBar ? 'Bartender 🍸' : 'Recetario 🥗';
   document.querySelector('header .sub').textContent = modoBar ? 'Recetas clásicas de barra, paso a paso' : 'Tus recetas de Australia y más';
   $('busca').value=''; tagActivo=null;
@@ -922,12 +1099,12 @@ function toggleBar(){
 
 function renderBar(){
   const q = $('busca').value.trim().toLowerCase();
-  const lista = COCTELES.filter(c=>(c.nombre+' '+c.ingredientes.join(' ')).toLowerCase().includes(q));
+  const lista = COCTELES.map(coctelView).filter(c=>(c.nombre+' '+c.ingredientes.join(' ')).toLowerCase().includes(q));
   $('chips').innerHTML='';
   $('lista').innerHTML = `
     <div class="card-dicc" onclick="abrirDiccionario()">
       <span class="em">📖</span>
-      <div><h3>Diccionario del bartender</h3><p>Alcoholes, utensilios y cómo te piden los tragos</p></div>
+      <div><h3>${t('dicc')}</h3><p>${t('diccSub')}</p></div>
     </div>` + lista.map(c=>`
     <div class="card" onclick="abrirCoctel('${c.id}')">
       <img class="foto" src="botellas/d-${c.id.replace('bar-','')}.jpg" alt="" ${c.id==='bar-negroni'?'style="object-position:center bottom"':''} onerror="this.outerHTML='<div class=sinfoto>${c.emoji}</div>'">
@@ -941,7 +1118,8 @@ function renderBar(){
 }
 
 function abrirCoctel(id){
-  const c = COCTELES.find(x=>x.id===id); if(!c) return;
+  let c = COCTELES.find(x=>x.id===id); if(!c) return;
+  c = coctelView(c);
   $('detalle').innerHTML = `
     <div class="barra-top">
       <button class="btn-circulo" onclick="cerrar('detalle')">←</button>
@@ -951,11 +1129,11 @@ function abrirCoctel(id){
     <div class="det-body">
       <h2>${c.emoji} ${c.nombre}</h2>
       <div class="det-meta">
-        <span class="pastilla">⏱ ${c.tiempo} min</span>
+        <span class="pastilla">⏱ ${c.tiempo} ${t('min')}</span>
         <span class="pastilla">${c.dificultad}</span>
         <span class="pastilla">🥃 ${esc(c.vaso)}</span>
       </div>
-      <div class="seccion"><h3>🍾 Qué botella agarrar</h3>
+      <div class="seccion"><h3>${t('botellas')}</h3>
         <div class="botellas-fila">
           ${c.botellas.map(k=>{const b=B[k];return `
             <div class="botella-card">
@@ -967,18 +1145,18 @@ function abrirCoctel(id){
             </div>`;}).join('')}
         </div>
       </div>
-      <div class="seccion"><h3>🛠️ Lo que vas a ocupar</h3>
+      <div class="seccion"><h3>${t('util')}</h3>
         <ul class="ing-lista">${c.herramientas.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
       </div>
-      <div class="seccion"><h3>🧺 Ingredientes</h3>
+      <div class="seccion"><h3>${t('ing')}</h3>
         <ul class="ing-lista">${c.ingredientes.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
       </div>
-      <div class="seccion"><h3>🍸 Paso a paso</h3>
+      <div class="seccion"><h3>${t('pasos')}</h3>
         ${c.pasos.map((p,i)=>`<div class="paso"><div class="num">${i+1}</div><p>${esc(p)}</p></div>`).join('')}
       </div>
-      <div class="seccion"><h3>📝 Tip de barra</h3><div class="nota">${esc(c.notas)}</div></div>
+      <div class="seccion"><h3>${t('tip')}</h3><div class="nota">${esc(c.notas)}</div></div>
       <div class="det-acciones">
-        <button class="btn btn-verde" onclick="modoCocina('${c.id}')">🍸 Modo servicio (paso a paso)</button>
+        <button class="btn btn-verde" onclick="modoCocina('${c.id}')">${t('servicio')}</button>
       </div>
     </div>`;
   $('detalle').classList.add('abierta');
@@ -1040,9 +1218,9 @@ function abrirDiccionario(){
       <span style="width:40px"></span>
     </div>
     <div class="det-body">
-      <h2>📖 Diccionario del bartender</h2>
-      <p style="color:var(--gris);margin-top:6px;font-size:.9rem">Lo básico para pararte en una barra sin que te agarren en curva.</p>
-      ${Object.entries(DICC).map(([sec,items])=>`
+      <h2>📖 ${t('dicc')}</h2>
+      <p style="color:var(--gris);margin-top:6px;font-size:.9rem">${t('diccIntro')}</p>
+      ${Object.entries(lang==='en'?DICC_EN:DICC).map(([sec,items])=>`
         <div class="seccion"><h3>${sec}</h3>
           ${items.map(([t,d])=>`<div class="dicc-item"><b>${esc(t)}</b><p>${esc(d)}</p></div>`).join('')}
         </div>`).join('')}
