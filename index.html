@@ -760,6 +760,7 @@ const B = {
   aperol:{marca:'Aperol', tipo:'Aperitivo naranja · botella panzona naranja', forma:'redonda', vidrio:'#F25C05', liquido:'#F25C05', etiqueta:'#F7E7C6', txt:'APEROL', txtC:'#F25C05', tapa:'#F7C948'},
   prosecco:{marca:'Prosecco (cualquiera)', tipo:'Vino espumoso italiano · botella tipo champaña', forma:'redonda', vidrio:'#2E4A2E', liquido:'#2E4A2E', etiqueta:'#F2EDDC', txt:'PROSECCO', txtC:'#2E4A2E', tapa:'#C9A227'},
   bourbon:{marca:'Jim Beam / Bulleit', tipo:'Bourbon (whisky americano) · botella cuadrada', forma:'cuadrada', vidrio:'#B5702A', liquido:'#B5702A', etiqueta:'#fff', txt:'BOURBON', txtC:'#8B4513', tapa:'#1A1A1A'},
+  martiniDry:{marca:'Martini Extra Dry', tipo:'Vermut seco · botella verde, etiqueta negra', forma:'alta', vidrio:'#2E7D46', liquido:'#2E7D46', etiqueta:'#111', txt:'EXTRA DRY', txtC:'#fff', tapa:'#1A3A24'},
   licor43:{marca:'Licor 43', tipo:'Licor de vainilla amarillo · botella alta dorada', forma:'alta', vidrio:'#E8B923', liquido:'#E8B923', etiqueta:'#1A1A1A', txt:'43', txtC:'#E8B923', tapa:'#1A1A1A'}
 };
 
@@ -912,6 +913,24 @@ const COCTELES = [
     'Versión batida (la de moda en Monterrey): mete Licor 43 y espresso al shaker con hielo, agita 10 segundos y cuela sobre hielo nuevo; sale con espumita.'
   ],
   notas:'El cóctel más pedido en restaurantes de México los últimos años. Solo dos ingredientes: no hay excusa para hacerlo mal.'
+},
+{
+  id:'bar-martini', nombre:'Martini (seco)', emoji:'🍸', tiempo:5, dificultad:'Media',
+  vaso:'Copa martini (en V), bien fría',
+  herramientas:['Vaso mezclador','Cuchara de bar','Colador julep (o el que tengas)','Jigger','Palillo para las aceitunas o pelador para el twist'],
+  ingredientes:['60 ml (2 nips) de ginebra','15 ml (½ nip) de vermut seco (Martini Extra Dry)','Hielo','2 o 3 aceitunas verdes en palillo, o un twist de limón amarillo'],
+  botellas:['tanqueray','martiniDry'],
+  pasos:[
+    'Mete la copa martini al congelador desde antes (o llénala de hielo con agua). Un martini en copa tibia no es martini.',
+    'Llena el vaso mezclador con hielo hasta 3/4.',
+    'Vierte sobre el hielo: 15 ml (½ nip) de vermut seco y 60 ml (2 nips) de ginebra.',
+    'Remueve con la cuchara de bar unos 30 segundos, suave y constante. Se REVUELVE, no se agita: agitado queda turbio y sobrediluido (aunque James Bond diga lo contrario).',
+    'Vacía la copa (tira el hielo/agua si la enfriaste así) y sécala.',
+    'Cuela la mezcla en la copa fría. Va SIN hielo: por eso todo debe estar helado.',
+    'Decora: aceitunas en palillo dentro de la copa, o exprime un twist de limón sobre el trago, pásalo por el borde y déjalo caer.',
+    'Si te lo piden "dirty", agrega 10 ml de salmuera de aceituna en el paso 3. Si lo piden "extra dry", casi nada de vermut.'
+  ],
+  notas:'Proporción clásica: 4 partes de gin por 1 de vermut seco (2 nips : ½ nip). Con vodka en vez de gin es un vodka martini. Es EL cóctel elegante: domínalo y te ves pro.'
 }
 ];
 
@@ -1025,7 +1044,21 @@ const COCTELES_EN = {
   'Pour the 45 ml (1½ nips) of Licor 43 over the ice.',
   'Classic version: slowly pour the hot espresso on top — it makes a nice gradient — and give it one stir.',
   'Shaken version (the trendy one): Licor 43 and espresso into the shaker with ice, shake 10 seconds and strain over fresh ice; it comes out with foam.'],
-  notas:'Mexico’s most ordered restaurant cocktail in recent years. Two ingredients only: no excuse to get it wrong.'}
+  notas:'Mexico’s most ordered restaurant cocktail in recent years. Two ingredients only: no excuse to get it wrong.'},
+'bar-martini':{nombre:'Martini (dry)', vaso:'Martini glass (V-shaped), well chilled', dificultad:'Medium',
+  herramientas:['Mixing glass','Bar spoon','Julep strainer (or whatever you have)','Jigger','Cocktail pick for the olives or a peeler for the twist'],
+  ingredientes:['60 ml (2 nips) of gin','15 ml (½ nip) of dry vermouth (Martini Extra Dry)','Ice','2-3 green olives on a pick, or a lemon twist'],
+  pasos:[
+    'Put the martini glass in the freezer ahead of time (or fill it with ice and water). A martini in a warm glass is not a martini.',
+    'Fill the mixing glass 3/4 with ice.',
+    'Pour over the ice: 15 ml (½ nip) of dry vermouth and 60 ml (2 nips) of gin.',
+    'Stir with the bar spoon for about 30 seconds, smooth and steady. It is STIRRED, not shaken: shaking makes it cloudy and overdiluted (whatever James Bond says).',
+    'Empty the glass (dump the ice/water if you chilled it that way) and wipe it dry.',
+    'Strain the mix into the cold glass. It is served WITHOUT ice — that is why everything must be freezing.',
+    'Garnish: olives on a pick in the glass, or squeeze a lemon twist over the drink, rub it on the rim and drop it in.',
+    'If they order it "dirty", add 10 ml of olive brine at step 3. If "extra dry", barely any vermouth.'
+  ],
+  notas:'Classic ratio: 4 parts gin to 1 part dry vermouth (2 nips : ½ nip). Swap gin for vodka and it is a vodka martini. THE elegant cocktail: master it and you look pro.'}
 };
 
 const DICC_EN = {
