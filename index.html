@@ -295,6 +295,19 @@
     border-radius:var(--radio);padding:12px 10px 10px;text-align:center;box-shadow:var(--sombra);
   }
   .botella-card svg{display:block;margin:0 auto 8px}
+  .botella-card img.real{display:block;width:100%;height:150px;object-fit:contain;margin:0 auto 8px;border-radius:10px;background:#fff}
+  .dicc-item{padding:12px 0;border-bottom:1px dashed var(--linea)}
+  .dicc-item b{display:block;font-family:'Sora';font-size:.95rem;margin-bottom:3px}
+  .dicc-item p{font-size:.9rem;line-height:1.5;color:var(--gris)}
+  body.modo-bar .dicc-item p{color:#C9BA9B}
+  .card-dicc{
+    grid-column:1/-1;display:flex;align-items:center;gap:12px;
+    background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);
+    padding:14px 16px;box-shadow:var(--sombra);cursor:pointer;
+  }
+  .card-dicc .em{font-size:1.9rem}
+  .card-dicc h3{font-size:1rem}
+  .card-dicc p{font-size:.78rem;color:var(--gris);margin-top:2px}
   .botella-card .marca{font-family:'Sora';font-weight:800;font-size:.82rem;line-height:1.2}
   .botella-card .tipo{font-size:.72rem;color:var(--gris);margin-top:3px;line-height:1.3}
 </style>
@@ -911,9 +924,13 @@ function renderBar(){
   const q = $('busca').value.trim().toLowerCase();
   const lista = COCTELES.filter(c=>(c.nombre+' '+c.ingredientes.join(' ')).toLowerCase().includes(q));
   $('chips').innerHTML='';
-  $('lista').innerHTML = lista.map(c=>`
+  $('lista').innerHTML = `
+    <div class="card-dicc" onclick="abrirDiccionario()">
+      <span class="em">📖</span>
+      <div><h3>Diccionario del bartender</h3><p>Alcoholes, utensilios y cómo te piden los tragos</p></div>
+    </div>` + lista.map(c=>`
     <div class="card" onclick="abrirCoctel('${c.id}')">
-      <div class="sinfoto">${c.emoji}</div>
+      <img class="foto" src="botellas/d-${c.id.replace('bar-','')}.jpg" alt="" ${c.id==='bar-negroni'?'style="object-position:center bottom"':''} onerror="this.outerHTML='<div class=sinfoto>${c.emoji}</div>'">
       <div class="info">
         <h3>${c.nombre}</h3>
         <div class="meta"><span>⏱ ${c.tiempo} min</span><span>${c.dificultad}</span></div>
@@ -930,6 +947,7 @@ function abrirCoctel(id){
       <button class="btn-circulo" onclick="cerrar('detalle')">←</button>
       <span style="width:40px"></span>
     </div>
+    <img class="det-foto" src="botellas/d-${c.id.replace('bar-','')}.jpg" alt="" ${c.id==='bar-negroni'?'style="object-position:center bottom"':''} onerror="this.remove()">
     <div class="det-body">
       <h2>${c.emoji} ${c.nombre}</h2>
       <div class="det-meta">
@@ -941,7 +959,9 @@ function abrirCoctel(id){
         <div class="botellas-fila">
           ${c.botellas.map(k=>{const b=B[k];return `
             <div class="botella-card">
-              ${svgBotella({...b, txtColor:b.txtC})}
+              <img class="real" src="botellas/${k}.jpg" alt="${esc(b.marca)}"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+              <span style="display:none">${svgBotella({...b, txtColor:b.txtC})}</span>
               <div class="marca">${esc(b.marca)}</div>
               <div class="tipo">${esc(b.tipo)}</div>
             </div>`;}).join('')}
@@ -960,6 +980,71 @@ function abrirCoctel(id){
       <div class="det-acciones">
         <button class="btn btn-verde" onclick="modoCocina('${c.id}')">🍸 Modo servicio (paso a paso)</button>
       </div>
+    </div>`;
+  $('detalle').classList.add('abierta');
+  $('detalle').scrollTop=0;
+}
+
+/* ---- Diccionario del bartender ---- */
+const DICC = {
+  '🍾 Alcohol y tipos de bebida': [
+    ['Spirit / destilado','El alcohol "fuerte" que se obtiene por destilación, normalmente entre 35% y 50% de alcohol. Son la base de casi todos los cócteles: tequila, mezcal, ron, ginebra (gin), vodka, whisky y brandy. Cuando alguien dice "¿qué destilado quieres?", se refiere a esto.'],
+    ['Licor','Destilado al que se le agrega azúcar y sabores (frutas, hierbas, café, vainilla). Es más dulce y suele tener menos alcohol (15-30%). Ejemplos: Cointreau, Licor 43, Kahlúa, Baileys, amaretto. Un licor casi nunca se toma como base: acompaña.'],
+    ['Triple sec','Licor de naranja seco. El más famoso es Cointreau; también Controy en México. Es el que lleva la margarita.'],
+    ['Vermut','Vino fortificado (con alcohol extra) e infusionado con hierbas. El rojo/rosso es dulce (Negroni, Manhattan); el seco/dry es el del Martini. Se guarda en el refri una vez abierto, como el vino.'],
+    ['Bíter / amargo','Bebida amarga de hierbas. Dos tipos: los aperitivos que se sirven en cantidad (Campari, Aperol) y los bíters concentrados en gotero (Angostura) de los que solo se ponen unas gotas ("dashes").'],
+    ['Aperitivo y digestivo','Aperitivo: trago ligero y amargo para abrir el apetito antes de comer (Aperol Spritz, vermut). Digestivo: fuerte o dulce para después de comer (carajillo, amaretto, brandy).'],
+    ['Espumoso','Vino con burbujas: champaña (Francia), prosecco (Italia), cava (España). Para cócteles casi siempre se usa prosecco por precio. Siempre bien frío y se sirve al final, sin agitar.'],
+    ['Blanco / reposado / añejo','Clasificación del tequila y el ron por tiempo en barrica. Blanco/plata: sin barrica, sabor limpio, ideal para cócteles cítricos. Reposado: 2 meses a 1 año, más suave. Añejo: más de 1 año, para tomarse derecho.'],
+    ['ABV / grados / proof','ABV es el porcentaje de alcohol (40% = 40 grados aquí). El "proof" gringo es el doble del porcentaje: 80 proof = 40%.'],
+    ['De la casa / well vs premium','El alcohol "de la casa" (well) es el barato que el bar usa por defecto. Si el cliente pide una marca ("margarita con Don Julio"), se cobra como premium. Siempre pregunta si no especifican.']
+  ],
+  '🛠️ Utensilios de barra': [
+    ['Shaker / coctelera','Para agitar tragos con cítricos, jugos o huevo. Hay dos: cobbler (3 piezas, con colador integrado, la clásica) y Boston (vaso + tin de metal, la de los bares profesionales).'],
+    ['Jigger','El medidor de dos conos. Medidas típicas: 1 oz = 30 ml y 1.5 oz = 45 ml. Medir siempre: el "ojo de buen cubero" arruina tragos y desperdicia botella.'],
+    ['Cuchara de bar','Cuchara larga de mango en espiral. Sirve para remover (stir), contar "vueltas" y para verter líquidos en capas resbalándolos por ella.'],
+    ['Colador / strainer','El Hawthorne es el de resorte que se pone sobre el shaker. El julep es el de hoyos para el vaso mezclador. El colador fino (de malla) se usa además del otro ("double strain") para quitar trocitos de hielo o pulpa.'],
+    ['Macerador / muddler','El "mazo" para machacar suave hierbas, fruta o azúcar en el fondo del vaso (mojito). Se presiona y gira, no se golpea.'],
+    ['Vaso mezclador','Vaso grande de vidrio donde se remueven con hielo los tragos que NO se agitan (Negroni, Old Fashioned, Manhattan).'],
+    ['Dosificador / speed pourer','El pico que se le pone a las botellas para servir con chorro parejo y poder hacer "conteo libre": contar segundos mientras viertes.'],
+    ['Vasos y copas','Old fashioned/rocks: bajo y ancho, para tragos con hielo o derechos. Highball/Collins: alto, para tragos con refresco o soda. Copa coctel/martini: en V, tragos sin hielo. Coupe: copa redonda baja, sours y daiquiris. Copa balón: gin tonic y spritz. Caballito: shots de tequila. Flauta: espumosos.'],
+    ['Otros básicos','Exprimidor de cítricos, pelador o cuchillo para twists, pinzas para hielo y decoraciones, escarchador (rimmer) para sal/azúcar, y trapo de barra siempre a la mano.']
+  ],
+  '🗣️ Cómo te van a pedir un trago': [
+    ['Derecho / neat','Solo el destilado, sin hielo, sin enfriar, en vaso old fashioned. "Un whisky derecho".'],
+    ['En las rocas / on the rocks','Servido sobre hielo. "Un tequila en las rocas".'],
+    ['Straight up / up','Se enfría con hielo (agitado o removido) pero se sirve SIN hielo, colado en copa. No lo confundas con derecho.'],
+    ['Shot / caballito','Trago corto (45 ml) para tomarse de golpe. El chaser es lo que lo acompaña para bajarlo (refresco, sangrita, cerveza).'],
+    ['Doble','Doble medida del alcohol, mismo trago. Se cobra doble alcohol.'],
+    ['Seco / dry','Menos dulce. En un Martini significa menos vermut; "extra dry" casi nada.'],
+    ['Sucio / dirty','Martini con salmuera de aceituna.'],
+    ['Twist','Tira de cáscara de cítrico que se exprime sobre el trago para soltar sus aceites y se deja de adorno.'],
+    ['Escarchado','Borde del vaso con sal (margarita, paloma) o azúcar. Siempre por FUERA del borde.'],
+    ['Garnish','La decoración del trago: rodaja, cereza, hierbabuena, aceituna. No es opcional: es parte de la presentación.'],
+    ['Virgin / mocktail','Versión sin alcohol de un cóctel. "Un mojito virgin".'],
+    ['Sour','Familia de cócteles: destilado + cítrico + endulzante (margarita, whisky sour, daiquiri). Fórmula 2 : 1 : ¾.'],
+    ['Highball','Familia: destilado + refresco/soda en vaso alto con hielo (cuba, paloma, gin tonic). Se "construyen" directo en el vaso.'],
+    ['Spritz','Familia: aperitivo amargo + espumoso + soda con mucho hielo.'],
+    ['Build / directo al vaso','Preparar el trago directamente en el vaso donde se sirve, sin shaker.'],
+    ['Dry shake','Agitar primero SIN hielo (para montar la clara de huevo) y luego con hielo.'],
+    ['Dash / golpe','Una "gotita" o chorrito mínimo, normalmente de bíter. "Dos dashes de Angostura".'],
+    ['Última llamada / last call','El aviso de que la barra está por cerrar: última ronda de pedidos.']
+  ]
+};
+
+function abrirDiccionario(){
+  $('detalle').innerHTML = `
+    <div class="barra-top">
+      <button class="btn-circulo" onclick="cerrar('detalle')">←</button>
+      <span style="width:40px"></span>
+    </div>
+    <div class="det-body">
+      <h2>📖 Diccionario del bartender</h2>
+      <p style="color:var(--gris);margin-top:6px;font-size:.9rem">Lo básico para pararte en una barra sin que te agarren en curva.</p>
+      ${Object.entries(DICC).map(([sec,items])=>`
+        <div class="seccion"><h3>${sec}</h3>
+          ${items.map(([t,d])=>`<div class="dicc-item"><b>${esc(t)}</b><p>${esc(d)}</p></div>`).join('')}
+        </div>`).join('')}
     </div>`;
   $('detalle').classList.add('abierta');
   $('detalle').scrollTop=0;
