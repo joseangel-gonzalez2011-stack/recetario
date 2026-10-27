@@ -325,6 +325,7 @@
     <button class="btn-bar" id="btn-bar" onclick="toggleBar()">🍸 Modo bartender</button>
     <button class="btn-bar" id="btn-lang" onclick="toggleLang()" style="width:auto;flex-shrink:0;padding:10px 18px">EN</button>
   </div>
+  <button class="btn-bar" id="btn-jg" onclick="pasarAJG()" style="margin-top:8px">📦 Pasar mis recetas a JG</button>
 </header>
 
 <div class="chips" id="chips"></div>
@@ -1265,6 +1266,25 @@ function abrirDiccionario(){
     </div>`;
   $('detalle').classList.add('abierta');
   $('detalle').scrollTop=0;
+}
+
+/* ================= Pasar a JG =================
+   Guarda todas las recetas (con fotos) y la lista del súper en un archivo
+   que la app JG importa en Recetario → «Traer recetas del Recetario viejo». */
+function pasarAJG(){
+  if(!recetas.length && !superLista.length){ toast('No tienes recetas guardadas todavía'); return; }
+  const datos = { tipo:'recetario-viejo', version:1, exportado:new Date().toISOString(), recetas, super:superLista };
+  const nombre = `recetario-para-jg-${new Date().toISOString().slice(0,10)}.json`;
+  const archivo = new File([JSON.stringify(datos)], nombre, { type:'application/json' });
+  // en iPhone abre el menú Compartir: "Guardar en Archivos" o AirDrop
+  if(navigator.canShare && navigator.canShare({ files:[archivo] })){
+    navigator.share({ files:[archivo], title:'Mis recetas para JG' })
+      .then(()=>toast(`${recetas.length} recetas listas para JG ✅`)).catch(()=>{});
+    return;
+  }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(archivo); a.download=nombre; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast(`${recetas.length} recetas guardadas en ${nombre} ✅`);
 }
 
 /* ================= Init ================= */
